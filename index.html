@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Videonymizer // Student Data Compliance Agent</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background-color: #0B0F19; font-family: system-ui, -apple-system, sans-serif; }
+        .glass { background: rgba(17, 24, 39, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .glow-green { box-shadow: 0 0 20px rgba(16, 185, 129, 0.15); }
+    </style>
+</head>
+<body class="text-gray-100 min-h-screen flex flex-col">
+
+    <nav class="border-b border-gray-800 bg-[#0F172A] px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+            <div class="bg-emerald-500 text-slate-900 p-2 rounded-lg font-black tracking-wider text-xs">VN</div>
+            <span class="text-lg font-bold tracking-tight text-white">VIDEONYMIZER</span>
+            <span class="text-xs bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20 font-mono">v1.0-beta</span>
+        </div>
+        <div class="flex items-center space-x-4 text-sm text-gray-400">
+            <div><i class="fa-solid fa-circle text-emerald-400 text-[10px] mr-2 animate-pulse"></i>Agent: Connected</div>
+        </div>
+    </nav>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <div class="space-y-6 lg:col-span-1">
+            <div class="glass p-6 rounded-2xl glow-green">
+                <h2 class="text-base font-semibold mb-4 text-white flex items-center"><i class="fa-solid fa-cloud-arrow-up text-emerald-400 mr-2"></i> File Ingestion Portal</h2>
+                <p class="text-xs text-gray-400 mb-4">Securely drop student assessment recordings to initiate automatic audio-visual PII stripping loops.</p>
+                
+                <div onclick="simulateProcessing()" class="border-2 border-dashed border-gray-700 hover:border-emerald-500/50 rounded-xl p-8 text-center cursor-pointer transition-all bg-gray-900/40 group">
+                    <i class="fa-solid fa-file-video text-3xl text-gray-500 group-hover:text-emerald-400 mb-3 transition-colors"></i>
+                    <p class="text-sm font-medium text-gray-300">Drag assessment video here</p>
+                    <p class="text-xs text-gray-500 mt-1">MP4, MOV up to 500MB</p>
+                </div>
+            </div>
+
+            <div class="glass p-6 rounded-2xl">
+                <h3 class="text-sm font-semibold mb-3 text-gray-300 flex items-center"><i class="fa-solid fa-sliders text-gray-400 mr-2"></i> Compliance Policies</h3>
+                <div class="space-y-3 text-xs">
+                    <label class="flex items-center justify-between p-2.5 rounded-lg bg-gray-900/50 border border-gray-800">
+                        <span class="text-gray-300"><i class="fa-solid fa-microphone text-emerald-400/70 mr-2"></i>Acoustic Name/ID Scrub</span>
+                        <input type="checkbox" checked class="accent-emerald-500 h-4 w-4">
+                    </label>
+                    <label class="flex items-center justify-between p-2.5 rounded-lg bg-gray-900/50 border border-gray-800">
+                        <span class="text-gray-300"><i class="fa-solid fa-id-card text-emerald-400/70 mr-2"></i>Visual Badges & Text Masks</span>
+                        <input type="checkbox" checked class="accent-emerald-500 h-4 w-4">
+                    </label>
+                    <label class="flex items-center justify-between p-2.5 rounded-lg bg-gray-900/50 border border-gray-800">
+                        <span class="text-gray-300"><i class="fa-solid fa-user-shield text-emerald-400/70 mr-2"></i>Dynamic Face Anonymization</span>
+                        <input type="checkbox" class="accent-emerald-500 h-4 w-4">
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-2 flex flex-col space-y-6">
+            
+            <div id="status-card" class="glass p-6 rounded-2xl flex-1 flex flex-col justify-between min-h-[350px]">
+                <div>
+                    <div class="flex items-center justify-between mb-4 border-b border-gray-800 pb-3">
+                        <h2 class="text-base font-semibold text-white flex items-center"><i class="fa-solid fa-brain text-emerald-400 mr-2"></i> Gemini Multimodal Compliance Feed</h2>
+                        <span id="badge" class="text-[10px] uppercase font-mono tracking-wider bg-gray-800 text-gray-400 px-2 py-0.5 rounded border border-gray-700">Idle</span>
+                    </div>
+                    
+                    <div id="display-area" class="text-center py-12 text-gray-500 space-y-2">
+                        <i class="fa-solid fa-chart-pie text-4xl block opacity-30 mb-2"></i>
+                        <p class="text-sm">No analysis stream initialized.</p>
+                        <p class="text-xs max-w-xs mx-auto text-gray-600">Interact with the File Ingestion Portal to trigger the autonomous compliance scanning pipelines.</p>
+                    </div>
+                </div>
+
+                <div class="bg-black/80 rounded-xl p-4 font-mono text-xs border border-gray-800 text-gray-400 mt-4 h-28 overflow-y-auto" id="terminal-log">
+                    <span class="text-emerald-500">[SYSTEM]:</span> Videonymizer engine initialized locally.<br>
+                    <span class="text-gray-500">[CONFIG]:</span> Pipeline waiting for target student video artifact...
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function simulateProcessing() {
+            const display = document.getElementById('display-area');
+            const badge = document.getElementById('badge');
+            const log = document.getElementById('terminal-log');
+
+            badge.innerText = "Analyzing";
+            badge.className = "text-[10px] uppercase font-mono tracking-wider bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded border border-amber-500/20 animate-pulse";
+            
+            log.innerHTML += `<br><span class="text-amber-400">[SCANNING]:</span> Video chunk uploaded. Processing multimodal audio loops...`;
+            display.innerHTML = `
+                <div class="space-y-4 text-left p-2 max-w-xl mx-auto">
+                    <div class="flex items-center justify-between text-xs text-gray-400 mb-1">
+                        <span>Uploading & Processing Content Bounds...</span>
+                        <span>65%</span>
+                    </div>
+                    <div class="w-full bg-gray-800 rounded-full h-1.5">
+                        <div class="bg-emerald-500 h-1.5 rounded-full animate-pulse" style="width: 65%"></div>
+                    </div>
+                </div>`;
+
+            setTimeout(() => {
+                badge.innerText = "Compliance Pass Complete";
+                badge.className = "text-[10px] uppercase font-mono tracking-wider bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/20";
+                log.innerHTML += `<br><span class="text-emerald-400">[SUCCESS]:</span> PII analysis done. 2 violation sectors passed to backend scrub block.`;
+                
+                display.innerHTML = `
+                    <div class="text-left bg-gray-900/60 p-5 rounded-xl border border-gray-800 space-y-4">
+                        <h4 class="text-sm font-bold text-emerald-400 flex items-center"><i class="fa-solid fa-square-check mr-2"></i> Automated Audit Report Generated</h4>
+                        <div class="grid grid-cols-2 gap-4 text-xs">
+                            <div class="p-3 bg-gray-800/40 rounded-lg"><span class="block text-gray-500 mb-0.5">Spoken PII (Student Name)</span><strong class="text-white text-sm">00:14 - 00:16</strong></div>
+                            <div class="p-3 bg-gray-800/40 rounded-lg"><span class="block text-gray-500 mb-0.5">Visual PII (On-Screen ID)</span><strong class="text-white text-sm">01:02 - 01:10</strong></div>
+                        </div>
+                        <button class="w-full bg-emerald-500 text-slate-900 font-bold text-xs py-2.5 rounded-lg hover:bg-emerald-400 transition-colors shadow-lg">Download Scrubbed Compliance Artifact</button>
+                    </div>`;
+            }, 2500);
+        }
+    </script>
+</body>
+</html>
