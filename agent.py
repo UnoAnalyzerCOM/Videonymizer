@@ -13,13 +13,14 @@ from .tools import (
     publish_file,
     render_html,
     submit_feedback,
+    scan_video_for_privacy_violations,
+    generate_compliance_report,
 )
 
 # ---------------------------------------------------------------------------
 # Videonymizer Compliance Agent (Root)
 # ---------------------------------------------------------------------------
 
-# Cleaned up skills container for compliance frameworks
 skills = []
 
 videonymizer_agent = Agent(
@@ -36,6 +37,8 @@ videonymizer_agent = Agent(
         render_html,
         submit_feedback,
         load_artifacts,
+        scan_video_for_privacy_violations,
+        generate_compliance_report,
     ],
     generate_content_config=genai.types.GenerateContentConfig(
         max_output_tokens=config.YOUTUBE_AGENT_MAX_OUTPUT_TOKENS,
