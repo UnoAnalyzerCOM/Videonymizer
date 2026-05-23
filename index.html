@@ -83,41 +83,132 @@
     </main>
 
     <script>
-        function simulateProcessing() {
-            const display = document.getElementById('display-area');
-            const badge = document.getElementById('badge');
-            const log = document.getElementById('terminal-log');
+        let lastReportData = null;
 
-            badge.innerText = "Analyzing";
-            badge.className = "text-[10px] uppercase font-mono tracking-wider bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded border border-amber-500/20 animate-pulse";
+        async function simulateProcessing() {
+            // Programmatically launch hidden file input window
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = 'video/*,audio/*';
             
-            log.innerHTML += `<br><span class="text-amber-400">[SCANNING]:</span> Video chunk uploaded. Processing multimodal audio loops...`;
-            display.innerHTML = `
-                <div class="space-y-4 text-left p-2 max-w-xl mx-auto">
-                    <div class="flex items-center justify-between text-xs text-gray-400 mb-1">
-                        <span>Uploading & Processing Content Bounds...</span>
-                        <span>65%</span>
-                    </div>
-                    <div class="w-full bg-gray-800 rounded-full h-1.5">
-                        <div class="bg-emerald-500 h-1.5 rounded-full animate-pulse" style="width: 65%"></div>
-                    </div>
-                </div>`;
+            fileInput.onchange = async (e) => {
+                const targetFile = e.target.files[0];
+                if (!targetFile) return;
 
-            setTimeout(() => {
-                badge.innerText = "Compliance Pass Complete";
-                badge.className = "text-[10px] uppercase font-mono tracking-wider bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/20";
-                log.innerHTML += `<br><span class="text-emerald-400">[SUCCESS]:</span> PII analysis done. 2 violation sectors passed to backend scrub block.`;
+                const display = document.getElementById('display-area');
+                const badge = document.getElementById('badge');
+                const log = document.getElementById('terminal-log');
+
+                // Shift dashboard state into processing mode
+                badge.innerText = "Analyzing";
+                badge.className = "text-[10px] uppercase font-mono tracking-wider bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded border border-amber-500/20 animate-pulse";
                 
+                log.innerHTML += `<br><span class="text-amber-400">[SCANNING]:</span> Uploading "${targetFile.name}" to the dynamic cloud pipeline...`;
                 display.innerHTML = `
-                    <div class="text-left bg-gray-900/60 p-5 rounded-xl border border-gray-800 space-y-4">
-                        <h4 class="text-sm font-bold text-emerald-400 flex items-center"><i class="fa-solid fa-square-check mr-2"></i> Automated Audit Report Generated</h4>
-                        <div class="grid grid-cols-2 gap-4 text-xs">
-                            <div class="p-3 bg-gray-800/40 rounded-lg"><span class="block text-gray-500 mb-0.5">Spoken PII (Student Name)</span><strong class="text-white text-sm">00:14 - 00:16</strong></div>
-                            <div class="p-3 bg-gray-800/40 rounded-lg"><span class="block text-gray-500 mb-0.5">Visual PII (On-Screen ID)</span><strong class="text-white text-sm">01:02 - 01:10</strong></div>
+                    <div class="space-y-4 text-left p-2 max-w-xl mx-auto">
+                        <div class="flex items-center justify-between text-xs text-gray-400 mb-1">
+                            <span>Processing multi-modal bounds via Gemini SDK loops...</span>
+                            <span class="animate-pulse text-amber-400 font-mono">Active</span>
                         </div>
-                        <button class="w-full bg-emerald-500 text-slate-900 font-bold text-xs py-2.5 rounded-lg hover:bg-emerald-400 transition-colors shadow-lg">Download Scrubbed Compliance Artifact</button>
+                        <div class="w-full bg-gray-800 rounded-full h-1.5 overflow-hidden">
+                            <div class="bg-emerald-500 h-1.5 rounded-full animate-pulse" style="width: 75%"></div>
+                        </div>
                     </div>`;
-            }, 2500);
+
+                // Wrap media file inside structural body payload
+                const formData = new FormData();
+                formData.append('video', targetFile);
+
+                try {
+                    // Dispatch POST request targeting server.py handler
+                    const response = await fetch('/api/scan', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (!response.ok) throw new Error("Backend connection fault.");
+                    const data = await response.json();
+                    lastReportData = data;
+
+                    // Transition state context to complete
+                    badge.innerText = "Compliance Pass Complete";
+                    badge.className = "text-[10px] uppercase font-mono tracking-wider bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/20";
+                    log.innerHTML += `<br><span class="text-emerald-400">[SUCCESS]:</span> Compliance sweep resolved. Structural mappings parsed locally.`;
+                    
+                    let violationRows = '';
+                    if (data.violations_found && data.violations_found.length > 0) {
+                        data.violations_found.forEach(v => {
+                            violationRows += `
+                                <div class="p-3 bg-gray-800/40 rounded-lg border border-gray-800">
+                                    <span class="block text-gray-400 font-medium mb-1">${v.type}</span>
+                                    <strong class="text-emerald-400 font-mono text-sm">${v.timestamp_start} - ${v.timestamp_end}</strong>
+                                </div>`;
+                        });
+                    } else {
+                        violationRows = `
+                            <div class="p-4 bg-emerald-950/20 rounded-xl text-emerald-400 border border-emerald-900/30 col-span-2 text-center text-xs">
+                                🎉 Clear run! No student data identifiers discovered within file parameters.
+                            </div>`;
+                    }
+
+                    display.innerHTML = `
+                        <div class="text-left bg-gray-900/60 p-5 rounded-xl border border-gray-800 space-y-4">
+                            <h4 class="text-sm font-bold text-emerald-400 flex items-center"><i class="fa-solid fa-square-check mr-2"></i> Automated Audit Report Generated</h4>
+                            <p class="text-xs text-gray-400">Target Resource: <span class="text-white font-mono">${data.file_scanned || targetFile.name}</span></p>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                                ${violationRows}
+                            </div>
+                            <button onclick="downloadComplianceArtifact()" class="w-full bg-emerald-500 text-slate-900 font-bold text-xs py-2.5 rounded-lg hover:bg-emerald-400 transition-colors shadow-lg flex items-center justify-center">
+                                <i class="fa-solid fa-file-arrow-download mr-2"></i> Download Scrubbed Compliance Artifact
+                            </button>
+                        </div>`;
+
+                } catch (err) {
+                    badge.innerText = "Pipeline Error";
+                    badge.className = "text-[10px] uppercase font-mono tracking-wider bg-red-500/10 text-red-400 px-2 py-0.5 rounded border border-red-500/20";
+                    log.innerHTML += `<br><span class="text-red-400">[FAIL]:</span> Analysis failure encountered. Check terminal system instances.`;
+                    display.innerHTML = `
+                        <div class="text-xs text-red-400 p-4 rounded-xl bg-red-950/20 border border-red-900/30 max-w-md mx-auto">
+                            Network request timeout or API initialization exception occurred.
+                        </div>`;
+                }
+            };
+
+            fileInput.click();
+        }
+
+        function downloadComplianceArtifact() {
+            if (!lastReportData) return;
+            
+            // Build text configuration logs mapping
+            let manifest = `==================================================\n`;
+            manifest += `VIDEONYMIZER PRIVACY COMPLIANCE MANIFEST\n`;
+            manifest += `==================================================\n`;
+            manifest += `Target Audio/Video Target: ${lastReportData.file_scanned}\n`;
+            manifest += `Audit Signature Status: SCRUBBING CONSTRAINTS PREPARED\n\n`;
+            manifest += `The backend encoder requires structural adjustments on the following timestamps:\n`;
+            
+            if (lastReportData.violations_found && lastReportData.violations_found.length > 0) {
+                lastReportData.violations_found.forEach((v, idx) => {
+                    manifest += `[PII Instance #${idx + 1}] Category: ${v.type} | Constraints: ${v.timestamp_start} --> ${v.timestamp_end}\n`;
+                });
+            } else {
+                manifest += `No private user footprints detected. File clear for academic publishing.\n`;
+            }
+            
+            // Execute automated down-stream browser processing link
+            const blob = new Blob([manifest], { type: 'text/plain' });
+            const downloadUrl = URL.createObjectURL(blob);
+            const anchor = document.createElement('a');
+            anchor.href = downloadUrl;
+            anchor.download = `compliance_manifest_${lastReportData.file_scanned.split('.')[0] || 'export'}.txt`;
+            
+            document.body.appendChild(anchor);
+            anchor.click();
+            
+            // Reclaim visual cache properties
+            document.body.removeChild(anchor);
+            URL.revokeObjectURL(downloadUrl);
         }
     </script>
 </body>
